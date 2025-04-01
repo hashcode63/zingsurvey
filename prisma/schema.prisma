@@ -1,0 +1,28 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model SurveyResponse {
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  language         String?
+  age              String?
+  isCompleted      Boolean  @default(false)
+  additionalData   Json?
+  paymentId        String?
+  payment          Payment? @relation(fields: [paymentId], references: [id])
+}
+
+model Payment {
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  status           String
+  amount           Float
+  paymentDetails   Json?
+  surveyResponses  SurveyResponse[]
+}
