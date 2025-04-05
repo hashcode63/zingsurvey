@@ -7,22 +7,51 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model SurveyResponse {
-  id               String   @id @default(uuid())
-  createdAt        DateTime @default(now())
-  language         String?
-  age              String?
-  isCompleted      Boolean  @default(false)
-  additionalData   Json?
-  paymentId        String?
-  payment          Payment? @relation(fields: [paymentId], references: [id])
+
+model PaymentTransaction {
+  id             String          @id @default(cuid())
+  amount         Float
+  currency       String          @default("NGN")
+  status         String          // pending, completed, failed
+  reference      String          @unique
+  customerEmail  String
+  customerName   String?
+  description    String?
+  metadata       Json?
+  receiptSent    Boolean         @default(false)
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  bankTransaction BankTransaction?
 }
 
-model Payment {
-  id               String   @id @default(uuid())
-  createdAt        DateTime @default(now())
-  status           String
-  amount           Float
-  paymentDetails   Json?
-  surveyResponses  SurveyResponse[]
+model BankTransaction {
+  id                String             @id @default(cuid())
+  transactionId     String             @unique
+  bankReference     String?            @unique
+  accountNumber     String?
+  bankName          String?
+  status            String
+  processingDetails Json?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  // Relations
+  paymentTransaction PaymentTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+}
+
+model Receipt {
+  id                  String   @id @default(cuid())
+  receiptNumber       String   @unique
+  transactionReference String
+  amount              Float
+  customerEmail       String
+  adminEmail          String
+  pdfUrl              String?
+  sentToCustomer      Boolean  @default(false)
+  sentToAdmin         Boolean  @default(false)
+  createdAt           DateTime @default(now())
 }
